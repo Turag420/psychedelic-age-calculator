@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍄 Cosmic Psychedelic Age Calculator 🌀</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Shrikhand&family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon-pink: #ff007f;
+      --neon-cyan: #00f0ff;
+      --neon-lime: #39ff14;
+      --neon-yellow: #ffe600;
+      --neon-purple: #b026ff;
+      --neon-orange: #ff6600;
+      --bg-dark: #0a0518;
+      --card-bg: rgba(18, 10, 36, 0.72);
+      --card-border: rgba(255, 255, 255, 0.16);
+      --glow-shadow: 0 0 25px rgba(255, 0, 127, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #ffffff;
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      selection-background-color: var(--neon-pink);
+    }
+
+    /* WebGL Canvas Background */
+    #psychedelic-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Scanlines / CRT Subtle Overlay */
+    .crt-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.5) 100%),
+                  repeating-linear-gradient(rgba(0, 0, 0, 0.08) 0px, rgba(0, 0, 0, 0.08) 1px, transparent 2px, transparent 4px);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Content wrapper */
+    .app-container {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* Groovy Top Bar */
+    .top-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem 1.5rem;
+      background: rgba(10, 5, 25, 0.6);
+      backdrop-filter: blur(12px);
+      border-radius: 50px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      background: linear-gradient(135deg, rgba(255, 0, 127, 0.25), rgba(0, 240, 255, 0.25));
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .controls-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .trippy-btn {
+      background: linear-gradient(135deg, #1f0d3d, #39115c);
+      color: #fff;
+      border: 1.5px solid var(--neon-cyan);
+      padding: 0.45rem 1rem;
+      border-radius: 25px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+
+    .trippy-btn:hover {
+      transform: translateY(-2px) scale(1.04);
+      background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+      border-color: #fff;
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+    }
+
+    .trippy-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .trippy-select {
+      background: rgba(20, 10, 40, 0.85);
+      color: #00f0ff;
+      border: 1.5px solid rgba(0, 240, 255, 0.4);
+      padding: 0.45rem 0.9rem;
+      border-radius: 20px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .trippy-select:focus {
+      border-color: var(--neon-pink);
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+    }
+
+    /* Hero Header */
+    .hero-header {
+      text-align: center;
+      margin: 1.5rem 0 3rem;
+      position: relative;
+    }
+
+    .psychedelic-title {
+      font-family: 'Shrikhand', cursive;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      line-height: 1.1;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #ff007f, #ffe600, #39ff14, #00f0ff, #b026ff, #ff007f);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowShift 6s ease infinite;
+      filter: drop-shadow(0 0 18px rgba(255, 0, 127, 0.6));
+      margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+
+    @keyframes rainbowShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .psychedelic-subtitle {
+      font-family: 'Righteous', cursive;
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      color: #ffe600;
+      text-shadow: 0 0 10px rgba(255, 230, 0, 0.6), 2px 2px 0px rgba(255, 0, 127, 0.8);
+      letter-spacing: 1.5px;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    /* Main Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 992px) {
+      .main-grid {
+        grid-template-columns: 380px 1fr;
+      }
+    }
+
+    /* Psychedelic Glass Card */
+    .trippy-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 28px;
+      border: 1.5px solid var(--card-border);
+      padding: 2rem;
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .trippy-card::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(135deg, rgba(255,0,127,0.3), rgba(0,240,255,0.3), rgba(57,255,20,0.3), rgba(176,38,255,0.3));
+      border-radius: 30px;
+      z-index: -1;
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+    }
+
+    .trippy-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-title {
+      font-family: 'Righteous', cursive;
+      font-size: 1.4rem;
+      color: var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    }
+
+    /* Date Picker Form */
+    .input-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #d1b8ff;
+      margin-bottom: 0.5rem;
+    }
+
+    .trippy-input {
+      width: 100%;
+      background: rgba(12, 5, 28, 0.85);
+      border: 2px solid rgba(255, 0, 127, 0.4);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      padding: 0.85rem 1.1rem;
+      border-radius: 16px;
+      outline: none;
+      transition: all 0.25s ease;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .trippy-input:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5), inset 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .time-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: #e2d2fe;
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.2);
+      transition: .3s;
+      border-radius: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    /* Preset Buttons */
+    .presets-container {
+      margin-top: 1.5rem;
+    }
+
+    .presets-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #a78bfa;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .presets-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .preset-pill {
+      background: rgba(30, 15, 55, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e4d7ff;
+      padding: 0.5rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .preset-pill:hover {
+      background: linear-gradient(90deg, rgba(255, 0, 127, 0.4), rgba(0, 240, 255, 0.4));
+      border-color: #fff;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* Live Precision Chronometer Display */
+    .chrono-display {
+      background: linear-gradient(135deg, rgba(20, 5, 45, 0.85), rgba(40, 10, 70, 0.85));
+      border: 2px solid var(--neon-pink);
+      border-radius: 24px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 35px rgba(255, 0, 127, 0.35);
+      position: relative;
+    }
+
+    .chrono-badge {
+      position: absolute;
+      top: -12px;
+      left: 2rem;
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-yellow));
+      color: #000;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.85rem;
+      border-radius: 20px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(255, 230, 0, 0.6);
+    }
+
+    .chrono-units-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+      gap: 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .chrono-unit {
+      text-align: center;
+      background: rgba(10, 3, 25, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 1rem 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chrono-val {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(180deg, #ffffff 30%, #ffe600 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 8px rgba(255, 230, 0, 0.4));
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    .chrono-val.ms-val {
+      background: linear-gradient(180deg, #00f0ff 30%, #ff007f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+    }
+
+    .chrono-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #a78bfa;
+    }
+
+    /* Total Stats Grid */
+    .stats-section-title {
+      font-family: 'Righteous', cursive;
+      font-size: 1.3rem;
+      color: #ffe600;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-shadow: 0 0 10px rgba(255, 230, 0, 0.4);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: rgba(15, 8, 32, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 6px 20px rgba(0, 240, 255, 0.25);
+    }
+
+    .stat-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 0.25rem;
+      word-break: break-all;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #c4b5fd;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Next Birthday Countdown Banner */
+    .bday-banner {
+      background: linear-gradient(90deg, rgba(255, 0, 127, 0.25), rgba(176, 38, 255, 0.25), rgba(0, 240, 255, 0.25));
+      border: 1.5px dashed var(--neon-yellow);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .bday-info h3 {
+      font-family: 'Righteous', cursive;
+      font-size: 1.4rem;
+      color: #ffe600;
+      margin-bottom: 0.25rem;
+    }
+
+    .bday-info p {
+      font-size: 0.9rem;
+      color: #f3e8ff;
+    }
+
+    .bday-timer-digits {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .bday-digit-box {
+      background: rgba(10, 5, 25, 0.8);
+      border: 1px solid var(--neon-pink);
+      border-radius: 12px;
+      padding: 0.5rem 0.85rem;
+      text-align: center;
+      min-width: 60px;
+    }
+
+    .bday-digit-box span {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--neon-cyan);
+    }
+
+    .bday-digit-box small {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      color: #d8b4fe;
+    }
+
+    /* Solar Year Progress Bar */
+    .solar-progress-container {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .solar-progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #c4b5fd;
+      margin-bottom: 0.35rem;
+    }
+
+    .solar-progress-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+    }
+
+    .solar-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff007f, #ffe600, #39ff14, #00f0ff);
+      background-size: 200% 100%;
+      animation: rainbowShift 4s linear infinite;
+      border-radius: 10px;
+      transition: width 0.5s ease-out;
+    }
+
+    /* Interplanetary Travel Section */
+    .planets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .planet-card {
+      background: rgba(15, 8, 35, 0.8);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 1.1rem 0.75rem;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .planet-card:hover {
+      transform: translateY(-5px) scale(1.05);
+      border-color: var(--planet-color, var(--neon-cyan));
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px var(--planet-color, var(--neon-cyan));
+    }
+
+    .planet-orb {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      margin: 0 auto 0.6rem;
+      position: relative;
+      box-shadow: inset -4px -4px 10px rgba(0, 0, 0, 0.6), 0 0 12px var(--planet-color, #fff);
+      background: var(--planet-gradient, #fff);
+    }
+
+    .planet-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #e2d2fe;
+      margin-bottom: 0.2rem;
+    }
+
+    .planet-age {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .planet-unit {
+      font-size: 0.68rem;
+      color: #a78bfa;
+    }
+
+    /* Cosmic Aura & Astrological Identity */
+    .zodiac-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .zodiac-card {
+      background: rgba(18, 10, 42, 0.8);
+      border: 1px solid rgba(255, 0, 127, 0.3);
+      border-radius: 20px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .zodiac-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .zodiac-glyph {
+      font-size: 2.4rem;
+      line-height: 1;
+      filter: drop-shadow(0 0 8px var(--neon-yellow));
+    }
+
+    .zodiac-titles h4 {
+      font-family: 'Righteous', cursive;
+      font-size: 1.3rem;
+      color: #fff;
+    }
+
+    .zodiac-titles span {
+      font-size: 0.8rem;
+      color: var(--neon-cyan);
+      font-weight: 600;
+    }
+
+    .zodiac-vibe {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: #e2d2fe;
+      font-style: italic;
+    }
+
+    /* Action Bar (Trip Out, Copy, Audio) */
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+
+    .big-trip-btn {
+      background: linear-gradient(90deg, #ff007f, #b026ff, #00f0ff);
+      background-size: 200% auto;
+      animation: rainbowShift 3s linear infinite;
+      color: #fff;
+      font-family: 'Righteous', cursive;
+      font-size: 1.15rem;
+      letter-spacing: 1.5px;
+      padding: 1rem 2rem;
+      border-radius: 40px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.6);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .big-trip-btn:hover {
+      transform: scale(1.06) rotate(-1deg);
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.8);
+    }
+
+    .big-trip-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: linear-gradient(135deg, rgba(20, 10, 45, 0.95), rgba(45, 10, 75, 0.95));
+      border: 1.5px solid var(--neon-lime);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(57, 255, 20, 0.4);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Trippy Floating Particles Container */
+    #particle-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .floating-emoji {
+      position: absolute;
+      font-size: 2rem;
+      animation: floatUp 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(100vh) scale(0.2) rotate(0deg);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      80% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-20vh) scale(1.6) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Heartbeat animation */
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.28); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.2); }
+      70% { transform: scale(1); }
+    }
+
+    .pulsing-heart {
+      display: inline-block;
+      animation: heartbeat 1.2s infinite;
+      color: var(--neon-pink);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .app-container {
+        padding: 1.5rem 1rem 4rem;
+      }
+      .trippy-card {
+        padding: 1.25rem;
+      }
+      .top-controls {
+        border-radius: 20px;
+      }
+      .chrono-units-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .bday-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- WebGL Shader Background -->
+  <canvas id="psychedelic-canvas"></canvas>
+  <div class="crt-overlay"></div>
+  <div id="particle-overlay"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-container">
+    <!-- Top Utility & Mode Bar -->
+    <header class="top-controls">
+      <div class="pill-badge">
+        <span>🍄</span>
+        <span>Psychedelic Chronometer</span>
+      </div>
+
+      <div class="controls-cluster">
+        <!-- Visual Mode Selector -->
+        <select id="modeSelect" class="trippy-select" title="Visual Warp Mode">
+          <option value="0">🌀 Liquid Acid Swirl</option>
+          <option value="1">🔮 Sacred Kaleidoscope</option>
+          <option value="2">⚡ Cyberdelic Grid</option>
+          <option value="3">🌌 Cosmic Nebula</option>
+        </select>
+
+        <!-- Color Palette Selector -->
+        <select id="paletteSelect" class="trippy-select" title="Color Theme">
+          <option value="0">🌈 Electric Rainbow</option>
+          <option value="1">💜 Cyberpunk Neon</option>
+          <option value="2">🍄 1969 Woodstock</option>
+          <option value="3">🔮 Mystic Violet</option>
+        </select>
+
+        <!-- Audio Drone Toggle -->
+        <button id="audioToggleBtn" class="trippy-btn" title="Toggle Cosmic Ambient Synthesizer">
+          <span id="audioIcon">🔈</span>
+          <span id="audioLabel">Cosmic Vibes</span>
+        </button>
+
+        <!-- Warp Boost Button -->
+        <button id="warpBtn" class="trippy-btn" title="Hyperspace Speed">
+          <span>🚀</span>
+          <span>Warp Speed</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Title -->
+    <div class="hero-header">
+      <h1 class="psychedelic-title">COSMIC AGE CALCULATOR</h1>
+      <p class="psychedelic-subtitle">⚡ Travel Through Spacetime • Decode Your Cosmic Lifespan ⚡</p>
+    </div>
+
+    <!-- Main Layout Grid -->
+    <div class="main-grid">
+      <!-- Left Column: Controls & Presets -->
+      <aside class="left-col">
+        <div class="trippy-card">
+          <h2 class="card-title">
+            <span>✨</span>
+            <span>Spacetime Coordinates</span>
+          </h2>
+
+          <div class="input-group">
+            <label class="input-label" for="birthDate">Date of Earth Arrival</label>
+            <input type="date" id="birthDate" class="trippy-input" value="2000-01-01">
+          </div>
+
+          <div class="time-toggle-row">
+            <span>Include Exact Hour of Birth</span>
+            <label class="switch">
+              <input type="checkbox" id="timeToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="input-group" id="timeInputContainer" style="display: none;">
+            <label class="input-label" for="birthTime">Time of Materialization</label>
+            <input type="time" id="birthTime" class="trippy-input" value="12:00">
+          </div>
+
+          <!-- Time Presets for instant fun exploration -->
+          <div class="presets-container">
+            <div class="presets-title">
+              <span>🚀</span>
+              <span>Cosmic Archetype Presets</span>
+            </div>
+            <div class="presets-grid">
+              <button class="preset-pill" onclick="applyPreset('1969-08-15', 'Woodstock Baby')">✌️ Woodstock '69</button>
+              <button class="preset-pill" onclick="applyPreset('1981-08-01', 'MTV Generation')">📼 MTV Launch '81</button>
+              <button class="preset-pill" onclick="applyPreset('1994-04-05', '90s Grunge Kid')">🎸 90s Soul '94</button>
+              <button class="preset-pill" onclick="applyPreset('2000-01-01', 'Y2K Dawn')">🛸 Y2K Dawn 2000</button>
+              <button class="preset-pill" onclick="applyPreset('2007-06-29', 'Gen-Z Cyber Born')">📱 Cyber Born '07</button>
+              <button class="preset-pill" onclick="applyPreset('2015-05-15', 'Gen Alpha Starlight')">🪐 Gen Alpha '15</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Astrological & Generational Summary -->
+        <div class="trippy-card" style="margin-top: 1.5rem;">
+          <h2 class="card-title">
+            <span>🔮</span>
+            <span>Cosmic Aura & Tribe</span>
+          </h2>
+          <div class="zodiac-grid" style="grid-template-columns: 1fr; margin-bottom: 0;">
+            <div class="zodiac-card" id="westernZodiacCard">
+              <div class="zodiac-header">
+                <div class="zodiac-glyph" id="zodiacGlyph">♑</div>
+                <div class="zodiac-titles">
+                  <h4 id="zodiacName">Capricorn</h4>
+                  <span id="zodiacElement">Earth Element • Saturn Ruled</span>
+                </div>
+              </div>
+              <p class="zodiac-vibe" id="zodiacVibe">Master of the temporal mountain, building realities across dimensions.</p>
+            </div>
+
+            <div class="zodiac-card" id="chineseZodiacCard">
+              <div class="zodiac-header">
+                <div class="zodiac-glyph" id="chineseGlyph">🐉</div>
+                <div class="zodiac-titles">
+                  <h4 id="chineseName">Metal Dragon</h4>
+                  <span id="chineseYear">Chinese Lunar Spirit</span>
+                </div>
+              </div>
+              <p class="zodiac-vibe" id="chineseVibe">Vibrant charismatic powerhouse pulsing with fierce creative fire.</p>
+            </div>
+
+            <div class="zodiac-card" id="generationCard">
+              <div class="zodiac-header">
+                <div class="zodiac-glyph">🌐</div>
+                <div class="zodiac-titles">
+                  <h4 id="genName">Millennial / Gen-Z</h4>
+                  <span id="genTribe">Temporal Cohort</span>
+                </div>
+              </div>
+              <p class="zodiac-vibe" id="genVibe">Bridging the tactile analog nostalgia with infinite cyber consciousness.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Column: Precision Counter & Deep Cosmic Stats -->
+      <main class="right-col">
+        <!-- Live Chronometer Card -->
+        <div class="chrono-display">
+          <div class="chrono-badge">● LIVE QUANTUM TEMPORAL TICKER</div>
+          <div class="chrono-units-grid">
+            <div class="chrono-unit">
+              <span class="chrono-val" id="chronoYears">0</span>
+              <span class="chrono-label">Years</span>
+            </div>
+            <div class="chrono-unit">
+              <span class="chrono-val" id="chronoMonths">0</span>
+              <span class="chrono-label">Months</span>
+            </div>
+            <div class="chrono-unit">
+              <span class="chrono-val" id="chronoDays">0</span>
+              <span class="chrono-label">Days</span>
+            </div>
+            <div class="chrono-unit">
+              <span class="chrono-val" id="chronoHours">0</span>
+              <span class="chrono-label">Hours</span>
+            </div>
+            <div class="chrono-unit">
+              <span class="chrono-val" id="chronoMins">0</span>
+              <span class="chrono-label">Minutes</span>
+            </div>
+            <div class="chrono-unit">
+              <span class="chrono-val" id="chronoSecs">0</span>
+              <span class="chrono-label">Seconds</span>
+            </div>
+            <div class="chrono-unit" style="border-color: rgba(0, 240, 255, 0.4);">
+              <span class="chrono-val ms-val" id="chronoMs">00</span>
+              <span class="chrono-label">Centisecs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Birthday Countdown Banner -->
+        <div class="bday-banner">
+          <div class="bday-info">
+            <h3 id="bdayTitle">🎂 Next Solar Revolution In:</h3>
+            <p id="bdayDateStr">Your next cosmic return around the Sun</p>
+            <!-- Solar year completion progress bar -->
+            <div class="solar-progress-container">
+              <div class="solar-progress-labels">
+                <span>Solar Orbit Progress</span>
+                <span id="solarProgressPercent">0%</span>
+              </div>
+              <div class="solar-progress-track">
+                <div class="solar-progress-bar" id="solarProgressBar"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bday-timer-digits">
+            <div class="bday-digit-box">
+              <span id="bdayDays">0</span>
+              <small>Days</small>
+            </div>
+            <div class="bday-digit-box">
+              <span id="bdayHours">0</span>
+              <small>Hours</small>
+            </div>
+            <div class="bday-digit-box">
+              <span id="bdayMins">0</span>
+              <small>Mins</small>
+            </div>
+            <div class="bday-digit-box">
+              <span id="bdaySecs">0</span>
+              <small>Secs</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Biological & Spacetime Voyage Metrics -->
+        <div class="trippy-card" style="margin-bottom: 2rem;">
+          <h3 class="stats-section-title">
+            <span>🧬</span>
+            <span>Biological & Spacetime Mileage</span>
+          </h3>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon pulsing-heart">❤️</div>
+              <div class="stat-value" id="statHeartbeats">0</div>
+              <div class="stat-label">Heartbeats Pulsed (~75 bpm)</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🌬️</div>
+              <div class="stat-value" id="statBreaths">0</div>
+              <div class="stat-label">Breaths of Atmosphere (~16/min)</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🛸</div>
+              <div class="stat-value" id="statMiles">0</div>
+              <div class="stat-label">Miles Traveled Orbiting the Sun</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">👁️</div>
+              <div class="stat-value" id="statBlinks">0</div>
+              <div class="stat-label">Total Eyeball Blinks (~15/min)</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🌙</div>
+              <div class="stat-value" id="statSleep">0</div>
+              <div class="stat-label">Days in Dream Realm (~33%)</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">⏳</div>
+              <div class="stat-value" id="statTotalDays">0</div>
+              <div class="stat-label">Total Planetary Days Lived</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interplanetary Age Explorer -->
+        <div class="trippy-card">
+          <h3 class="stats-section-title">
+            <span>🪐</span>
+            <span>Solar System Age Explorer</span>
+          </h3>
+          <p style="font-size: 0.85rem; color: #c4b5fd; margin-bottom: 1.25rem;">
+            Because different worlds rotate around Sol at different orbital frequencies, your age transforms across the planets!
+          </p>
+
+          <div class="planets-grid">
+            <!-- Mercury -->
+            <div class="planet-card" style="--planet-color: #ff9d5c; --planet-gradient: radial-gradient(circle, #ffca99, #8c4a1e);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Mercury</div>
+              <div class="planet-age" id="planetMercury">0</div>
+              <div class="planet-unit">Mercury Yrs</div>
+            </div>
+
+            <!-- Venus -->
+            <div class="planet-card" style="--planet-color: #ffcc00; --planet-gradient: radial-gradient(circle, #ffe680, #b37400);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Venus</div>
+              <div class="planet-age" id="planetVenus">0</div>
+              <div class="planet-unit">Venus Yrs</div>
+            </div>
+
+            <!-- Mars -->
+            <div class="planet-card" style="--planet-color: #ff4500; --planet-gradient: radial-gradient(circle, #ff774d, #991f00);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Mars</div>
+              <div class="planet-age" id="planetMars">0</div>
+              <div class="planet-unit">Mars Yrs</div>
+            </div>
+
+            <!-- Jupiter -->
+            <div class="planet-card" style="--planet-color: #d4a373; --planet-gradient: radial-gradient(circle, #faedcd, #bc6c25);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Jupiter</div>
+              <div class="planet-age" id="planetJupiter">0</div>
+              <div class="planet-unit">Jupiter Yrs</div>
+            </div>
+
+            <!-- Saturn -->
+            <div class="planet-card" style="--planet-color: #e9c46a; --planet-gradient: radial-gradient(circle, #f4a261, #e76f51);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Saturn</div>
+              <div class="planet-age" id="planetSaturn">0</div>
+              <div class="planet-unit">Saturn Yrs</div>
+            </div>
+
+            <!-- Uranus -->
+            <div class="planet-card" style="--planet-color: #48cae4; --planet-gradient: radial-gradient(circle, #90e0ef, #0077b6);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Uranus</div>
+              <div class="planet-age" id="planetUranus">0</div>
+              <div class="planet-unit">Uranus Yrs</div>
+            </div>
+
+            <!-- Neptune -->
+            <div class="planet-card" style="--planet-color: #0096c7; --planet-gradient: radial-gradient(circle, #48cae4, #03045e);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Neptune</div>
+              <div class="planet-age" id="planetNeptune">0</div>
+              <div class="planet-unit">Neptune Yrs</div>
+            </div>
+
+            <!-- Pluto -->
+            <div class="planet-card" style="--planet-color: #d8b4fe; --planet-gradient: radial-gradient(circle, #e9d5ff, #581c87);">
+              <div class="planet-orb"></div>
+              <div class="planet-name">Pluto</div>
+              <div class="planet-age" id="planetPluto">0</div>
+              <div class="planet-unit">Pluto Yrs</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Bar: Trip Out & Copy Summary -->
+        <div class="action-bar">
+          <button class="big-trip-btn" id="tripOutBtn">
+            <span>🍄</span>
+            <span>TRIP OUT / CELEBRATE</span>
+            <span>✨</span>
+          </button>
+          <button class="trippy-btn" id="copyVibeBtn" style="padding: 1rem 1.6rem; font-size: 1rem;">
+            <span>📋</span>
+            <span>Copy Cosmic Passport</span>
+          </button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Element -->
+  <div id="toast">
+    <span>✨</span>
+    <span id="toastMsg">Cosmic Passport Copied to Clipboard!</span>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    /* ====================================================================
+       1. WEBGL PSYCHEDELIC BACKGROUND SHADER
+       ==================================================================== */
+    const canvas = document.getElementById('psychedelic-canvas');
+    let gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    let isFallback = !gl;
+
+    const vsSource = `
+      attribute vec2 a_position;
+      void main() {
+        gl_Position = vec4(a_position, 0.0, 1.0);
+      }
+    `;
+
+    const fsSource = `
+      precision highp float;
+      uniform vec2 u_resolution;
+      uniform float u_time;
+      uniform vec2 u_mouse;
+      uniform int u_mode;
+      uniform int u_palette;
+      uniform float u_warp;
+
+      // Inigo Quilez cosine palette formulation
+      vec3 pal(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d) {
+        return a + b * cos(6.28318 * (c * t + d));
+      }
+
+      vec3 getCol(float t, int p) {
+        if (p == 0) { // Electric Rainbow
+          return pal(t, vec3(0.5, 0.5, 0.5), vec3(0.5, 0.5, 0.5), vec3(1.0, 1.0, 1.0), vec3(0.0, 0.33, 0.67));
+        } else if (p == 1) { // Cyberpunk Neon
+          return pal(t, vec3(0.5, 0.5, 0.5), vec3(0.5, 0.5, 0.5), vec3(2.0, 1.0, 0.0), vec3(0.5, 0.20, 0.25));
+        } else if (p == 2) { // 1969 Woodstock Gold & Coral
+          return pal(t, vec3(0.8, 0.5, 0.4), vec3(0.2, 0.4, 0.2), vec3(2.0, 1.0, 1.0), vec3(0.0, 0.25, 0.25));
+        } else { // Mystic Violet / Emerald
+          return pal(t, vec3(0.5, 0.2, 0.8), vec3(0.5, 0.5, 0.2), vec3(1.0, 1.0, 2.0), vec3(0.3, 0.6, 0.1));
+        }
+      }
+
+      void main() {
+        vec2 st = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+        vec2 m = (u_mouse - 0.5 * u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+        float t = u_time * 0.45 * u_warp;
+
+        // Interactive mouse distortion ripple
+        float dMouse = length(st - m);
+        st += normalize(st - m + 0.001) * sin(dMouse * 14.0 - t * 4.0) * 0.035 * exp(-dMouse * 3.0);
+
+        vec3 col = vec3(0.0);
+
+        if (u_mode == 1) {
+          // Sacred Kaleidoscope Geometry
+          float r = length(st);
+          float a = atan(st.y, st.x);
+          float segments = 8.0;
+          float pi = 3.14159265;
+          a = mod(a, 2.0 * pi / segments) - pi / segments;
+          a = abs(a);
+          vec2 kst = vec2(cos(a), sin(a)) * r;
+
+          for (float i = 1.0; i < 4.0; i++) {
+            kst = abs(kst) / dot(kst, kst) - vec2(0.85 + 0.1 * sin(t * 0.6 * i));
+          }
+          float val = sin(length(kst) * 2.5 + t);
+          col = getCol(val + r * 0.4, u_palette);
+        } else if (u_mode == 2) {
+          // Cyberdelic Tunnel Grid
+          float r = length(st);
+          float a = atan(st.y, st.x);
+          vec2 uv = vec2(1.0 / (r + 0.12) + t, a / 3.14159265 * 4.0 + sin(t * 0.4));
+          float pattern = sin(uv.x * 6.0) * cos(uv.y * 6.0) + sin(uv.x * 3.0 - uv.y * 3.0);
+          col = getCol(pattern * 0.5 + 0.5 + t * 0.2, u_palette);
+          col *= smoothstep(0.04, 0.4, r);
+        } else if (u_mode == 3) {
+          // Cosmic Nebula Clouds
+          float v = 0.0;
+          vec2 p = st * 3.2;
+          for (float i = 1.0; i < 5.0; i++) {
+            p += vec2(sin(p.y * 1.5 + t * 0.6) * 0.5, cos(p.x * 1.5 + t * 0.6) * 0.5);
+            v += sin(p.x + p.y + t * 0.35) / i;
+          }
+          col = getCol(v * 0.5 + 0.5, u_palette);
+        } else {
+          // Liquid Acid Swirl (Domain Warping)
+          vec2 p = st * 2.6;
+          for (int i = 1; i < 5; i++) {
+            float fi = float(i);
+            p += vec2(
+              sin(p.y * 1.25 + t * 0.5 + fi) + cos(p.x * 0.8 + t * 0.3),
+              cos(p.x * 1.25 - t * 0.4 + fi) - sin(p.y * 0.8 - t * 0.2)
+            );
+          }
+          float pattern = sin(p.x * 2.2) * cos(p.y * 2.2) + sin(p.x + p.y + t);
+          col = getCol(pattern * 0.5 + 0.5, u_palette);
+        }
+
+        // Vignette to blend into deep cosmic background
+        float vig = 1.0 - smoothstep(0.7, 1.4, length(st));
+        col = col * 0.75 * vig + vec3(0.04, 0.02, 0.08);
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `;
+
+    let shaderProgram, positionLocation;
+    let uResolutionLoc, uTimeLoc, uMouseLoc, uModeLoc, uPaletteLoc, uWarpLoc;
+    let mouseX = 0, mouseY = 0;
+    let currentMode = 0;
+    let currentPalette = 0;
+    let warpFactor = 1.0;
+    let warpTarget = 1.0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = canvas.height - e.clientY;
+    });
+
+    if (gl) {
+      function createShader(gl, type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      }
+
+      const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+      const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+      shaderProgram = gl.createProgram();
+      gl.attachShader(shaderProgram, vertexShader);
+      gl.attachShader(shaderProgram, fragmentShader);
+      gl.linkProgram(shaderProgram);
+
+      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        console.error('Program link error:', gl.getProgramInfoLog(shaderProgram));
+        isFallback = true;
+      } else {
+        gl.useProgram(shaderProgram);
+        positionLocation = gl.getAttribLocation(shaderProgram, 'a_position');
+        uResolutionLoc = gl.getUniformLocation(shaderProgram, 'u_resolution');
+        uTimeLoc = gl.getUniformLocation(shaderProgram, 'u_time');
+        uMouseLoc = gl.getUniformLocation(shaderProgram, 'u_mouse');
+        uModeLoc = gl.getUniformLocation(shaderProgram, 'u_mode');
+        uPaletteLoc = gl.getUniformLocation(shaderProgram, 'u_palette');
+        uWarpLoc = gl.getUniformLocation(shaderProgram, 'u_warp');
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+          -1.0, -1.0,
+           1.0, -1.0,
+          -1.0,  1.0,
+          -1.0,  1.0,
+           1.0, -1.0,
+           1.0,  1.0
+        ]), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+      }
+    }
+
+    let startTime = performance.now();
+
+    function renderLoop() {
+      const now = performance.now();
+      const elapsed = (now - startTime) * 0.001;
+
+      // Smoothly interpolate warp factor back to 1.0
+      warpFactor += (warpTarget - warpFactor) * 0.05;
+      if (warpTarget > 1.0 && warpFactor > 2.8) {
+        warpTarget = 1.0;
+      }
+
+      if (gl && !isFallback) {
+        gl.uniform2f(uResolutionLoc, canvas.width, canvas.height);
+        gl.uniform1f(uTimeLoc, elapsed);
+        gl.uniform2f(uMouseLoc, mouseX, mouseY);
+        gl.uniform1i(uModeLoc, currentMode);
+        gl.uniform1i(uPaletteLoc, currentPalette);
+        gl.uniform1f(uWarpLoc, warpFactor);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      } else {
+        // 2D Canvas Fallback
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.fillStyle = '#0a0518';
+        ctx.fillRect(0, 0, w, h);
+        for (let i = 0; i < 8; i++) {
+          const x = w/2 + Math.cos(elapsed * 0.5 + i) * (w * 0.3);
+          const y = h/2 + Math.sin(elapsed * 0.4 + i * 2) * (h * 0.3);
+          const rad = 150 + Math.sin(elapsed + i) * 60;
+          const grad = ctx.createRadialGradient(x, y, 10, x, y, rad);
+          const hue = ((elapsed * 25) + i * 45) % 360;
+          grad.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.35)`);
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(x, y, rad, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
+
+    /* ====================================================================
+       2. AMBIENT WEB AUDIO SYNTHESIZER
+       ==================================================================== */
+    let audioCtx = null;
+    let isAudioPlaying = false;
+    let masterGain = null;
+    let oscillators = [];
+
+    function initAudio() {
+      if (audioCtx) return;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      masterGain.connect(audioCtx.destination);
+
+      // Low pass filter with subtle modulation
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(432, audioCtx.currentTime);
+      filter.connect(masterGain);
+
+      // 432 Hz Sacred Chord tuning: A4 = 432Hz -> Fundamental drone: 108Hz, 216Hz, 270Hz, 324Hz
+      const freqs = [108, 162, 216, 270];
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+        // subtle frequency wobble
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        lfo.frequency.setValueAtTime(0.2 + idx * 0.1, audioCtx.currentTime);
+        lfoGain.gain.setValueAtTime(1.5, audioCtx.currentTime);
+        lfo.connect(osc.frequency);
+        lfo.start();
+
+        oscGain.gain.setValueAtTime(0.25 / freqs.length, audioCtx.currentTime);
+        osc.connect(oscGain);
+        oscGain.connect(filter);
+        osc.start();
+        oscillators.push(osc);
+      });
+    }
+
+    function toggleAudio() {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const btn = document.getElementById('audioToggleBtn');
+      const icon = document.getElementById('audioIcon');
+      const label = document.getElementById('audioLabel');
+
+      if (!isAudioPlaying) {
+        masterGain.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 1.2);
+        isAudioPlaying = true;
+        icon.textContent = '🔊';
+        label.textContent = 'Cosmic Vibes: ON';
+        btn.style.borderColor = 'var(--neon-lime)';
+        btn.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.6)';
+        playChime(540);
+      } else {
+        masterGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+        isAudioPlaying = false;
+        icon.textContent = '🔈';
+        label.textContent = 'Cosmic Vibes';
+        btn.style.borderColor = 'var(--neon-cyan)';
+        btn.style.boxShadow = '0 0 10px rgba(0, 240, 255, 0.3)';
+      }
+    }
+
+    function playChime(freq = 648) {
+      if (!audioCtx || !isAudioPlaying) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.5);
+    }
+
+    document.getElementById('audioToggleBtn').addEventListener('click', toggleAudio);
+
+    /* ====================================================================
+       3. CONTROLS & INTERACTIVITY
+       ==================================================================== */
+    document.getElementById('modeSelect').addEventListener('change', (e) => {
+      currentMode = parseInt(e.target.value, 10);
+      playChime(432 * 1.5);
+      showToast(`Warp Mode: ${e.target.options[e.target.selectedIndex].text}`);
+    });
+
+    document.getElementById('paletteSelect').addEventListener('change', (e) => {
+      currentPalette = parseInt(e.target.value, 10);
+      playChime(432 * 1.25);
+      showToast(`Palette: ${e.target.options[e.target.selectedIndex].text}`);
+    });
+
+    const warpBtn = document.getElementById('warpBtn');
+    warpBtn.addEventListener('click', () => {
+      warpTarget = 3.5;
+      playChime(864);
+      burstParticles(20);
+      showToast('🚀 HYPERSPACE WARP ENGAGED!');
+    });
+
+    // Time Toggle
+    const timeToggle = document.getElementById('timeToggle');
+    const timeContainer = document.getElementById('timeInputContainer');
+    timeToggle.addEventListener('change', () => {
+      timeContainer.style.display = timeToggle.checked ? 'block' : 'none';
+      updateAge();
+    });
+
+    // Date inputs
+    const birthDateInput = document.getElementById('birthDate');
+    const birthTimeInput = document.getElementById('birthTime');
+    birthDateInput.addEventListener('input', updateAge);
+    birthTimeInput.addEventListener('input', updateAge);
+
+    function applyPreset(dateStr, label) {
+      birthDateInput.value = dateStr;
+      playChime(648);
+      burstParticles(12);
+      showToast(`Loaded Archetype: ${label}`);
+      updateAge();
+    }
+
+    /* ====================================================================
+       4. ACCURATE AGE & CHRONOMETER CALCULATIONS
+       ==================================================================== */
+    function getSelectedBirthDate() {
+      const dateVal = birthDateInput.value;
+      if (!dateVal) return null;
+      let timeVal = '12:00';
+      if (timeToggle.checked && birthTimeInput.value) {
+        timeVal = birthTimeInput.value;
+      }
+      return new Date(`${dateVal}T${timeVal}:00`);
+    }
+
+    function calculateExactAge(birth, now) {
+      let years = now.getFullYear() - birth.getFullYear();
+      let months = now.getMonth() - birth.getMonth();
+      let days = now.getDate() - birth.getDate();
+      let hours = now.getHours() - birth.getHours();
+      let mins = now.getMinutes() - birth.getMinutes();
+      let secs = now.getSeconds() - birth.getSeconds();
+      let ms = now.getMilliseconds() - birth.getMilliseconds();
+
+      if (ms < 0) { ms += 1000; secs--; }
+      if (secs < 0) { secs += 60; mins--; }
+      if (mins < 0) { mins += 60; hours--; }
+      if (hours < 0) { hours += 24; days--; }
+      if (days < 0) {
+        // days in previous month
+        const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        days += prevMonth.getDate();
+        months--;
+      }
+      if (months < 0) {
+        months += 12;
+        years--;
+      }
+
+      const totalMs = now.getTime() - birth.getTime();
+      return { years, months, days, hours, mins, secs, ms, totalMs };
+    }
+
+    function updateAge() {
+      const birth = getSelectedBirthDate();
+      if (!birth || isNaN(birth.getTime())) return;
+
+      const now = new Date();
+      if (birth > now) {
+        document.getElementById('chronoYears').textContent = '🛸';
+        document.getElementById('chronoMonths').textContent = 'TIME';
+        document.getElementById('chronoDays').textContent = 'WARP';
+        document.getElementById('bdayTitle').textContent = '🛸 Time Traveler Alert!';
+        document.getElementById('bdayDateStr').textContent = 'You have not yet materialized in this spacetime continuum!';
+        return;
+      }
+
+      const age = calculateExactAge(birth, now);
+
+      // Chronometer update
+      document.getElementById('chronoYears').textContent = age.years;
+      document.getElementById('chronoMonths').textContent = age.months;
+      document.getElementById('chronoDays').textContent = age.days;
+      document.getElementById('chronoHours').textContent = age.hours;
+      document.getElementById('chronoMins').textContent = age.mins;
+      document.getElementById('chronoSecs').textContent = age.secs;
+      document.getElementById('chronoMs').textContent = String(Math.floor(age.ms / 10)).padStart(2, '0');
+
+      // Totals
+      const totalSecs = Math.floor(age.totalMs / 1000);
+      const totalMins = Math.floor(totalSecs / 60);
+      const totalHours = Math.floor(totalMins / 60);
+      const totalDays = Math.floor(totalHours / 24);
+
+      // Biological metrics
+      const heartbeats = Math.floor(totalMins * 75);
+      const breaths = Math.floor(totalMins * 16);
+      const milesTraveled = Math.floor(totalHours * 66616); // Earth orbital speed around sun (~66,616 mph)
+      const blinks = Math.floor(totalMins * 15 * (16 / 24)); // assuming 16 waking hours
+      const sleepDays = Math.floor(totalDays * 0.33);
+
+      document.getElementById('statHeartbeats').textContent = heartbeats.toLocaleString();
+      document.getElementById('statBreaths').textContent = breaths.toLocaleString();
+      document.getElementById('statMiles').textContent = milesTraveled.toLocaleString();
+      document.getElementById('statBlinks').textContent = blinks.toLocaleString();
+      document.getElementById('statSleep').textContent = sleepDays.toLocaleString();
+      document.getElementById('statTotalDays').textContent = totalDays.toLocaleString();
+
+      // Interplanetary Age (Orbital Periods)
+      document.getElementById('planetMercury').textContent = (totalDays / 87.97).toFixed(2);
+      document.getElementById('planetVenus').textContent = (totalDays / 224.7).toFixed(2);
+      document.getElementById('planetMars').textContent = (totalDays / 686.98).toFixed(2);
+      document.getElementById('planetJupiter').textContent = (totalDays / 4332.59).toFixed(2);
+      document.getElementById('planetSaturn').textContent = (totalDays / 10759.22).toFixed(2);
+      document.getElementById('planetUranus').textContent = (totalDays / 30685.4).toFixed(2);
+      document.getElementById('planetNeptune').textContent = (totalDays / 60189.0).toFixed(2);
+      document.getElementById('planetPluto').textContent = (totalDays / 90560.0).toFixed(3);
+
+      // Next Birthday Countdown
+      let nextBday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate(), birth.getHours(), birth.getMinutes());
+      if (nextBday < now) {
+        nextBday.setFullYear(now.getFullYear() + 1);
+      }
+      let lastBday = new Date(nextBday.getFullYear() - 1, birth.getMonth(), birth.getDate(), birth.getHours(), birth.getMinutes());
+
+      const bdayDiffMs = nextBday.getTime() - now.getTime();
+      const bdayDays = Math.floor(bdayDiffMs / (1000 * 60 * 60 * 24));
+      const bdayHours = Math.floor((bdayDiffMs / (1000 * 60 * 60)) % 24);
+      const bdayMins = Math.floor((bdayDiffMs / (1000 * 60)) % 60);
+      const bdaySecs = Math.floor((bdayDiffMs / 1000) % 60);
+
+      document.getElementById('bdayDays').textContent = bdayDays;
+      document.getElementById('bdayHours').textContent = bdayHours;
+      document.getElementById('bdayMins').textContent = bdayMins;
+      document.getElementById('bdaySecs').textContent = bdaySecs;
+
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+      document.getElementById('bdayDateStr').textContent = `Approaching on ${nextBday.toLocaleDateString(undefined, options)}`;
+
+      // Solar Orbit Progress
+      const totalSolarYearMs = nextBday.getTime() - lastBday.getTime();
+      const elapsedSolarMs = now.getTime() - lastBday.getTime();
+      const percent = Math.min(100, Math.max(0, (elapsedSolarMs / totalSolarYearMs) * 100)).toFixed(1);
+      document.getElementById('solarProgressBar').style.width = `${percent}%`;
+      document.getElementById('solarProgressPercent').textContent = `${percent}%`;
+
+      // Update Zodiac & Generational Info
+      updateAura(birth);
+    }
+
+    // High frequency ticker loop for smooth milliseconds
+    setInterval(() => {
+      const birth = getSelectedBirthDate();
+      if (!birth || isNaN(birth.getTime())) return;
+      const now = new Date();
+      if (birth > now) return;
+
+      const age = calculateExactAge(birth, now);
+      document.getElementById('chronoYears').textContent = age.years;
+      document.getElementById('chronoMonths').textContent = age.months;
+      document.getElementById('chronoDays').textContent = age.days;
+      document.getElementById('chronoHours').textContent = age.hours;
+      document.getElementById('chronoMins').textContent = age.mins;
+      document.getElementById('chronoSecs').textContent = age.secs;
+      document.getElementById('chronoMs').textContent = String(Math.floor(age.ms / 10)).padStart(2, '0');
+    }, 45);
+
+    /* ====================================================================
+       5. ASTROLOGICAL & GENERATIONAL DATA
+       ==================================================================== */
+    const ZODIAC_SIGNS = [
+      { name: "Capricorn", glyph: "♑", elem: "Earth • Saturn Ruled", vibe: "Master of temporal architecture, patient climber of the cosmic summit.", start: [0, 1], end: [0, 19] },
+      { name: "Aquarius", glyph: "♒", elem: "Air • Uranus Ruled", vibe: "Electric visionary channeling futuristic wavelengths and revolutionary frequencies.", start: [0, 20], end: [1, 18] },
+      { name: "Pisces", glyph: "♓", elem: "Water • Neptune Ruled", vibe: "Mystic dreamer dissolving barriers between waking illusion and eternal dreamscape.", start: [1, 19], end: [2, 20] },
+      { name: "Aries", glyph: "♈", elem: "Fire • Mars Ruled", vibe: "Primal spark of cosmic creation, leaping fearlessly into unknown dimensions.", start: [2, 21], end: [3, 19] },
+      { name: "Taurus", glyph: "♉", elem: "Earth • Venus Ruled", vibe: "Sensory alchemist rooted deep within sacred earth rhythms and abundant beauty.", start: [3, 20], end: [4, 20] },
+      { name: "Gemini", glyph: "♊", elem: "Air • Mercury Ruled", vibe: "Quantum trickster dancing between parallel timelines and infinite curiosities.", start: [4, 21], end: [5, 20] },
+      { name: "Cancer", glyph: "♋", elem: "Water • Moon Ruled", vibe: "Lunar ocean keeper cradling emotional memory and sacred intuitive tides.", start: [5, 21], end: [6, 22] },
+      { name: "Leo", glyph: "♌", elem: "Fire • Sun Ruled", vibe: "Radiant solar beacon radiating unapologetic warmth, drama, and majestic love.", start: [6, 23], end: [7, 22] },
+      { name: "Virgo", glyph: "♍", elem: "Earth • Mercury Ruled", vibe: "Sacred geometer tuning reality to immaculate precision and healing craft.", start: [7, 23], end: [8, 22] },
+      { name: "Libra", glyph: "♎", elem: "Air • Venus Ruled", vibe: "Harmonic weaver seeking ethereal balance, chromatic elegance, and cosmic peace.", start: [8, 23], end: [9, 22] },
+      { name: "Scorpio", glyph: "♏", elem: "Water • Pluto Ruled", vibe: "Deep-sea alchemist diving into mystical shadows to resurrect as phoenix light.", start: [9, 23], end: [10, 21] },
+      { name: "Sagittarius", glyph: "♐", elem: "Fire • Jupiter Ruled", vibe: "Interstellar archer aiming arrows of truth straight toward the galactic core.", start: [10, 22], end: [11, 21] },
+      { name: "Capricorn", glyph: "♑", elem: "Earth • Saturn Ruled", vibe: "Master of temporal architecture, patient climber of the cosmic summit.", start: [11, 22], end: [11, 31] }
+    ];
+
+    const CHINESE_ANIMALS = [
+      { name: "Rat", glyph: "🐀", trait: "Agile, sharp-witted pioneer of abundance." },
+      { name: "Ox", glyph: "🐂", trait: "Steadfast mountain of resilience and quiet strength." },
+      { name: "Tiger", glyph: "🐅", trait: "Fierce courageous wanderer driven by untamed spirit." },
+      { name: "Rabbit", glyph: "🐇", trait: "Graceful diplomat navigating chaos with serene elegance." },
+      { name: "Dragon", glyph: "🐉", trait: "Majestic dynamo radiating mythic creative fire." },
+      { name: "Snake", glyph: "🐍", trait: "Enigmatic sage endowed with deep intuitive insight." },
+      { name: "Horse", glyph: "🐎", trait: "Untamed freedom seeker galloping toward boundless horizons." },
+      { name: "Goat", glyph: "🐐", trait: "Artistic romantic soul harmonizing with cosmic tranquility." },
+      { name: "Monkey", glyph: "🐒", trait: "Ingenious innovator outwitting every cosmic riddle." },
+      { name: "Rooster", glyph: "🐓", trait: "Punctual herald of the dawn, razor-sharp and flamboyant." },
+      { name: "Dog", glyph: "🐕", trait: "Fiercely loyal protector of sacred truth and friendship." },
+      { name: "Pig", glyph: "🐖", trait: "Generous epicurean celebrating the sweet feast of existence." }
+    ];
+
+    const CHINESE_ELEMENTS = ["Metal", "Water", "Wood", "Fire", "Earth"];
+
+    function getWesternZodiac(m, d) {
+      for (let z of ZODIAC_SIGNS) {
+        if (
+          (m === z.start[0] && d >= z.start[1]) ||
+          (m === z.end[0] && d <= z.end[1])
+        ) {
+          return z;
+        }
+      }
+      return ZODIAC_SIGNS[0];
+    }
+
+    function getChineseZodiac(year) {
+      // Base year 1900 was Year of the Metal Rat (index 0)
+      const offset = (year - 1900) % 12;
+      const animalIdx = offset >= 0 ? offset : (offset + 12);
+      const animal = CHINESE_ANIMALS[animalIdx];
+
+      // Element determined by last digit of year: 0,1=Metal; 2,3=Water; 4,5=Wood; 6,7=Fire; 8,9=Earth
+      const lastDigit = Math.abs(year % 10);
+      const elemIdx = Math.floor(lastDigit / 2);
+      const element = CHINESE_ELEMENTS[elemIdx];
+
+      return { name: `${element} ${animal.name}`, glyph: animal.glyph, trait: animal.trait };
+    }
+
+    function getGeneration(year) {
+      if (year < 1946) return { name: "Silent Generation", tribe: "The Resilient Stewards", vibe: "Forged in historical tempests with stoic perseverance and quiet devotion." };
+      if (year <= 1964) return { name: "Baby Boomers", tribe: "The Woodstock Dreamers", vibe: "Catalysts of the 1960s cultural explosion and revolutionary soundtrack." };
+      if (year <= 1980) return { name: "Generation X", tribe: "The Analog Rebels", vibe: "Skeptical, gritty, and fiercely independent pioneers of the underground." };
+      if (year <= 1996) return { name: "Millennials", tribe: "The Cyber Mystics", vibe: "Bridging tactile dial-up memories with boundless digital interconnectedness." };
+      if (year <= 2012) return { name: "Generation Z", tribe: "The Neural Nomads", vibe: "Hyper-connected reality-shifters bending memes and algorithms into new paradigms." };
+      return { name: "Generation Alpha", tribe: "The Solar Children", vibe: "Born into the artificial intelligence dawn, native navigators of multi-realities." };
+    }
+
+    function updateAura(birth) {
+      const m = birth.getMonth();
+      const d = birth.getDate();
+      const y = birth.getFullYear();
+
+      // Western
+      const wz = getWesternZodiac(m, d);
+      document.getElementById('zodiacGlyph').textContent = wz.glyph;
+      document.getElementById('zodiacName').textContent = wz.name;
+      document.getElementById('zodiacElement').textContent = wz.elem;
+      document.getElementById('zodiacVibe').textContent = wz.vibe;
+
+      // Chinese
+      const cz = getChineseZodiac(y);
+      document.getElementById('chineseGlyph').textContent = cz.glyph;
+      document.getElementById('chineseName').textContent = cz.name;
+      document.getElementById('chineseVibe').textContent = cz.trait;
+
+      // Generation
+      const gen = getGeneration(y);
+      document.getElementById('genName').textContent = gen.name;
+      document.getElementById('genTribe').textContent = gen.tribe;
+      document.getElementById('genVibe').textContent = gen.vibe;
+    }
+
+    /* ====================================================================
+       6. TRIP OUT CELEBRATION & PARTICLES
+       ==================================================================== */
+    const tripOutBtn = document.getElementById('tripOutBtn');
+    const particleOverlay = document.getElementById('particle-overlay');
+    const TRIPPY_EMOJIS = ['🍄', '🌈', '👁️', '🌀', '🪐', '⚡', '☮️', '✨', '🛸', '🔮', '💖', '⭐'];
+
+    function burstParticles(count = 25) {
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'floating-emoji';
+        el.textContent = TRIPPY_EMOJIS[Math.floor(Math.random() * TRIPPY_EMOJIS.length)];
+        el.style.left = `${Math.random() * 95}vw`;
+        el.style.animationDelay = `${Math.random() * 0.4}s`;
+        el.style.fontSize = `${1.6 + Math.random() * 2.2}rem`;
+        particleOverlay.appendChild(el);
+
+        setTimeout(() => {
+          el.remove();
+        }, 3500);
+      }
+    }
+
+    tripOutBtn.addEventListener('click', () => {
+      warpTarget = 4.0;
+      burstParticles(45);
+      playChime(432 * 2);
+      setTimeout(() => playChime(432 * 2.5), 150);
+      setTimeout(() => playChime(432 * 3), 300);
+      showToast('🍄 CONSCIOUSNESS EXPANSION INITIATED! 🌀');
+    });
+
+    /* ====================================================================
+       7. COPY TOAST & SUMMARY
+       ==================================================================== */
+    const toast = document.getElementById('toast');
+    let toastTimeout = null;
+
+    function showToast(msg) {
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    document.getElementById('copyVibeBtn').addEventListener('click', () => {
+      const birth = getSelectedBirthDate();
+      if (!birth) return;
+      const age = calculateExactAge(birth, new Date());
+      const wz = getWesternZodiac(birth.getMonth(), birth.getDate());
+      const cz = getChineseZodiac(birth.getFullYear());
+      const gen = getGeneration(birth.getFullYear());
+      const miles = document.getElementById('statMiles').textContent;
+      const beats = document.getElementById('statHeartbeats').textContent;
+      const marsAge = document.getElementById('planetMars').textContent;
+
+      const summary = `
+🍄 MY COSMIC PSYCHEDELIC AGE PASSPORT 🌀
+────────────────────────────────────────
+📅 Spacetime Arrival: ${birth.toDateString()}
+⏳ Exact Earth Age: ${age.years} Years, ${age.months} Months, ${age.days} Days
+⏱️ Chrono Precision: ${age.hours}h ${age.mins}m ${age.secs}s
+🔮 Western Zodiac: ${wz.glyph} ${wz.name} (${wz.elem})
+🐉 Chinese Zodiac: ${cz.glyph} ${cz.name}
+🌐 Generational Tribe: ${gen.name} ("${gen.tribe}")
+🚀 Orbiting Sol Mileage: ${miles} Miles traveled through space!
+❤️ Heartbeats Pulsed: ${beats} Beats
+🪐 Mars Age: ${marsAge} Martian Years
+────────────────────────────────────────
+✨ Generated via Cosmic Psychedelic Age Calculator ✨
+`.trim();
+
+      navigator.clipboard.writeText(summary).then(() => {
+        burstParticles(15);
+        playChime(864);
+        showToast('Cosmic Passport Copied to Clipboard! 📋✨');
+      }).catch(() => {
+        showToast('Passport ready! (Clipboard permission needed)');
+      });
+    });
+
+    // Initial Run
+    updateAge();
+  </script>
+</body>
+</html>
